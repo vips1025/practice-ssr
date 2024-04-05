@@ -4,90 +4,66 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import shop.mtcoding.blog._core.errors.exception.Exception403;
-import shop.mtcoding.blog._core.errors.exception.Exception404;
 import shop.mtcoding.blog.user.User;
 
 import java.util.List;
 
-@RequiredArgsConstructor // final이 붙은 친구들의 생성자를 만들어줘
-@Controller // new BoardController(IoC에서 BoardRepository를 찾아서 주입) -> IoC 컨테이너 등록
+@RequiredArgsConstructor
+@Controller
 public class BoardController {
 
-    private final BoardRepository boardRepository;
+    private final BoardService boardService;
     private final HttpSession session;
 
+    // 게시글 작성
     @PostMapping("/board/save")
-    public String save(BoardRequest.SaveDTO reqDTO) {
+    public String save(BoardRequest.SaveDTO requestDTO) {
         User sessionUser = (User) session.getAttribute("sessionUser");
-        boardRepository.save(reqDTO.toEntity(sessionUser));
+        boardService.save(requestDTO, sessionUser);
         return "redirect:/";
     }
 
+    // 게시글 수정
     @PostMapping("/board/{id}/update")
-    public String update(@PathVariable Integer id, BoardRequest.UpdateDTO reqDTO) {
+    public String update(@PathVariable Integer id, BoardRequest.UpdateDTO requestDTO) {
         User sessionUser = (User) session.getAttribute("sessionUser");
-        Board board = boardRepository.findById(id);
-
-        if(sessionUser.getId() != board.getUser().getId()){
-            throw new Exception403("게시글을 수정할 권한이 없습니다");
-        }
-
-        boardRepository.updateById(id, reqDTO.getTitle(), reqDTO.getContent());
+        boardService.updateById(id, sessionUser.getId(), requestDTO);
         return "redirect:/board/" + id;
     }
 
+    // 게시글 조회
     @GetMapping("/board/{id}/update-form")
     public String updateForm(@PathVariable Integer id, HttpServletRequest request) {
-        Board board = boardRepository.findById(id);
-
+        Board board = boardService.findById(id);
         request.setAttribute("board", board);
         return "board/update-form";
     }
 
+    // 게시글 삭제
     @PostMapping("/board/{id}/delete")
     public String delete(@PathVariable Integer id) {
         User sessionUser = (User) session.getAttribute("sessionUser");
-        Board board = boardRepository.findById(id);
-
-        if(sessionUser.getId() != board.getUser().getId()){
-            throw new Exception403("게시글을 삭제할 권한이 없습니다");
-        }
-
-        boardRepository.deleteById(id);
+        boardService.deleteById(id, sessionUser.getId());
         return "redirect:/";
     }
 
+    // 게시글 목록 보기
     @GetMapping("/")
     public String index(HttpServletRequest request) {
-        List<Board> boardList = boardRepository.findAll();
+        List<Board> boardList = boardService.findByAll();
         request.setAttribute("boardList", boardList);
         return "index";
     }
 
-    @GetMapping("/board/save-form")
-    public String saveForm() {
-        return "board/save-form";
-    }
-
+    // 게시글 상세보기
     @GetMapping("/board/{id}")
     public String detail(@PathVariable Integer id, HttpServletRequest request) {
         User sessionUser = (User) session.getAttribute("sessionUser");
-        Board board = boardRepository.findByIdJoinUser(id);
+        Board board = boardService.Detail(id, sessionUser);
 
-        // 로그인을 하고, 게시글의 주인이면 isOwner가 true가 된다.
-        boolean isOwner = false;
-        if(sessionUser != null){
-            if(sessionUser.getId() == board.getUser().getId()){
-                isOwner = true;
-            }
-        }
-
-        request.setAttribute("isOwner", isOwner);
         request.setAttribute("board", board);
         return "board/detail";
     }

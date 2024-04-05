@@ -20,12 +20,14 @@ public class Board {
     private String title;
     private String content;
 
-    //@JoinColumn(name = "user_id")
     @ManyToOne(fetch = FetchType.LAZY)
-    private User user; // db -> user_id
+    private User user;
 
-    @CreationTimestamp // pc -> db (날짜주입)
+    @CreationTimestamp
     private Timestamp createdAt;
+
+    @Transient
+    private boolean isOwner;
 
     @Builder
     public Board(Integer id, String title, String content, User user, Timestamp createdAt) {
