@@ -52,4 +52,16 @@ public class UserController {
         session.invalidate();
         return "redirect:/";
     }
+
+    // 회원가입 화면
+    @GetMapping("/join-form")
+    public String joinForm() {
+        return "user/join-form";
+    }
+
+    // 로그인 화면
+    @GetMapping("/login-form")
+    public String loginForm() {
+        return "user/login-form";
+    }
 }

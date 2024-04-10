@@ -1,47 +1,44 @@
-package shop.mtcoding.blog.board;
+package shop.mtcoding.blog.reply;
 
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
-import shop.mtcoding.blog.reply.Reply;
+import shop.mtcoding.blog.board.Board;
 import shop.mtcoding.blog.user.User;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
 
 @NoArgsConstructor
 @Data
-@Table(name = "board_tb")
+@Table(name = "reply_tb")
 @Entity
-public class Board {
+public class Reply {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    private String title;
-    private String content;
+
+    private String comment;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Board board;
+
     @CreationTimestamp
     private Timestamp createdAt;
 
-    @OrderBy("id desc")
-    @OneToMany(mappedBy = "board", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-    private List<Reply> replies = new ArrayList<>();
-
     @Transient
-    private boolean isBoardOwner;
+    private boolean isReplyOwner;
 
     @Builder
-    public Board(Integer id, String title, String content, User user, Timestamp createdAt) {
+    public Reply(Integer id, String comment, User user, Board board, Timestamp createdAt) {
         this.id = id;
-        this.title = title;
-        this.content = content;
+        this.comment = comment;
         this.user = user;
+        this.board = board;
         this.createdAt = createdAt;
     }
 }

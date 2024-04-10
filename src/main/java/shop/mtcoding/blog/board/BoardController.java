@@ -67,4 +67,10 @@ public class BoardController {
         request.setAttribute("board", board);
         return "board/detail";
     }
+
+    // 게시글 작성 화면
+    @GetMapping("/board/save-form")
+    public String saveForm() {
+        return "board/save-form";
+    }
 }
